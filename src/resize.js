@@ -1,3 +1,5 @@
+/*eslint no-unused-vars: "warn"*/
+
 import {
     add as v_add,
     dot as v_dot,
