@@ -1,0 +1,6 @@
+dist/
+*.*ignore
+*.log
+*.lock
+
+CHANGELOG.md
