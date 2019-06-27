@@ -151,3 +151,6 @@ https://github.com/seognil-lab/vector-math-fp
 ---
 
 ## 🕗 TODO
+
+-   [ ] option prevent resize overhead
+-   [ ] resize: mini size max size
