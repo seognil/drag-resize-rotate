@@ -1,13 +1,13 @@
-/*eslint no-unused-vars: "warn"*/
+/* eslint no-unused-vars: "warn" */
 
 import {
-    add as v_add,
-    dot as v_dot,
-    lenOf as v_lenOf,
-    minus as v_minus,
-    ratioOf as v_ratioOf,
-    rotate as v_rotate,
-    times as v_times,
+    add as Vadd,
+    dot as Vdot,
+    lenOf as VlenOf,
+    minus as Vminus,
+    ratioOf as VratioOf,
+    rotate as Vrotate,
+    times as Vtimes,
 } from 'vector-math-fp';
 
 import { approxFix } from 'approx-fix';
@@ -69,8 +69,8 @@ const isMirrorModeMap = {
 // * ---------------- trigger from edge, filter input by one axis
 // * 边缘触发时 input的轴向过滤器
 
-const axisX = [1, 0],
-    axisY = [0, 1];
+const axisX = [1, 0];
+const axisY = [0, 1];
 const inputAxisFilter = {
     [mk.left]: axisX,
     [mk.right]: axisX,
@@ -80,26 +80,29 @@ const inputAxisFilter = {
 
 // * ---------------- inputToSizeFilter 输入到尺寸的映射
 
-const l = -1,
-    r = 1,
-    t = -1,
-    b = 1;
-const inputToSizeFilter = {
-    [mk.left]: [l, 0],
-    [mk.right]: [r, 0],
-    [mk.top]: [0, t],
-    [mk.bottom]: [0, b],
-    [mk.leftTop]: [l, t],
-    [mk.leftBottom]: [l, b],
-    [mk.rightTop]: [r, t],
-    [mk.rightBottom]: [r, b],
-};
+const inputToSizeFilter = (() => {
+    const l = -1;
+    const r = 1;
+    const t = -1;
+    const b = 1;
+
+    return {
+        [mk.left]: [l, 0],
+        [mk.right]: [r, 0],
+        [mk.top]: [0, t],
+        [mk.bottom]: [0, b],
+        [mk.leftTop]: [l, t],
+        [mk.leftBottom]: [l, b],
+        [mk.rightTop]: [r, t],
+        [mk.rightBottom]: [r, b],
+    };
+})();
 
 // * ---------------- diagonal of size which would be used for corner trigger
 // * 角触发计算所需的对角线向量
 
-const k1 = r => [r, 1],
-    k2 = r => [r, -1];
+const k1 = r => [r, 1];
+const k2 = r => [r, -1];
 
 const ratioCornerOperator = {
     [mk.leftTop]: k1,
@@ -111,8 +114,8 @@ const ratioCornerOperator = {
 // * ---------------- lock ratio operator for edge trigger
 // * 边缘触发时候 尺寸锁定比例的算子
 
-const rx = (r, [x, y]) => [x, x / r],
-    ry = (r, [x, y]) => [y * r, y];
+const rx = (r, [x, y]) => [x, x / r];
+const ry = (r, [x, y]) => [y * r, y];
 const ratioEdgeOperator = {
     [mk.left]: rx,
     [mk.right]: rx,
@@ -126,7 +129,7 @@ const resize = ({ startPos, opts = {} }) => {
     // * ---------------- preparing
 
     const { center, size, rotate } = startPos;
-    let { startPoint = [0, 0], movePoint = [0, 0], mode = 'normal', marker = null } = opts;
+    const { startPoint = [0, 0], movePoint = [0, 0], mode = 'normal', marker = null } = opts;
     const result = {};
 
     if (!modeChoice[mode]) {
@@ -158,11 +161,11 @@ const resize = ({ startPos, opts = {} }) => {
     // * ---------------- varibles declaration 过程变量声明
 
     // * ratio, 宽高比
-    let r = v_ratioOf(size);
+    const r = VratioOf(size);
 
     // * inputDelta, would be processed later, 手势输入值（后续会再次处理）
-    let inputDelta = v_minus(startPoint, movePoint);
-    let delta = v_rotate(-rotate, inputDelta);
+    const inputDelta = Vminus(startPoint, movePoint);
+    let delta = Vrotate(-rotate, inputDelta);
 
     let dSize;
     let dCenter;
@@ -171,24 +174,22 @@ const resize = ({ startPos, opts = {} }) => {
 
     if (!isRatio) {
         if (isEdgeMarker) {
-            delta = v_times(toAxisVector, delta);
+            delta = Vtimes(toAxisVector, delta);
         }
-        dSize = v_times(toSizeVector, delta);
+        dSize = Vtimes(toSizeVector, delta);
+    } else if (isEdgeMarker) {
+        delta = Vtimes(toAxisVector, delta);
+
+        dSize = Vtimes(toSizeVector, delta);
+        dSize = ratioLocker(r, dSize);
     } else {
-        if (isEdgeMarker) {
-            delta = v_times(toAxisVector, delta);
+        // * project input to diagonal vector, 将输入映射到对角线投影
+        const diagonalVector = diagonalOperator(r);
+        delta = diagonalVector.map(
+            e => (e * Vdot(diagonalVector, delta)) / VlenOf(diagonalVector) ** 2,
+        );
 
-            dSize = v_times(toSizeVector, delta);
-            dSize = ratioLocker(r, dSize);
-        } else {
-            // * project input to diagonal vector, 将输入映射到对角线投影
-            const diagonalVector = diagonalOperator(r);
-            delta = diagonalVector.map(
-                e => (e * v_dot(diagonalVector, delta)) / Math.pow(v_lenOf(diagonalVector), 2),
-            );
-
-            dSize = v_times(toSizeVector, delta);
-        }
+        dSize = Vtimes(toSizeVector, delta);
     }
 
     // * ---------------- calc size
@@ -203,7 +204,7 @@ const resize = ({ startPos, opts = {} }) => {
     // * number should always be positive
     // * (while drag overhead it will be negative)
     // * 总是为正数（缩放过头会变成负数）
-    result.size = v_add(size, dSize)
+    result.size = Vadd(size, dSize)
         .map(Math.abs)
         .map(approxFix);
 
@@ -213,7 +214,7 @@ const resize = ({ startPos, opts = {} }) => {
     // * 非中心对称模式 center会变
     // * 中心对称模式 center不会变
     if (!isMirror) {
-        result.center = v_add(center, v_rotate(rotate, v_times([0.5, 0.5], delta))).map(approxFix);
+        result.center = Vadd(center, Vrotate(rotate, Vtimes([0.5, 0.5], delta))).map(approxFix);
     }
 
     return result;

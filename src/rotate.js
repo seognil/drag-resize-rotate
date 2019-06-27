@@ -6,6 +6,7 @@ import { angleBetween, minus } from 'vector-math-fp';
 
 const rotate = ({ startPos, opts = {} }) => {
     const { startPoint = [0, 0], movePoint = [0, 0] } = opts;
+    // eslint-disable-next-line no-shadow
     const { center, rotate } = startPos;
     const result = {};
 
