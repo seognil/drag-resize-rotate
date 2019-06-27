@@ -1,6 +1,6 @@
 const { checkError, checkFit, checkFitApprox } = require('@seognil-lab/chai-helper');
 const { merge } = require('lodash/fp');
-const { modeChoice: md, markerChoice: mk, move, resize, rotate } = require('../dist/index.cjs');
+const { modeChoice: md, markerChoice: mk, move, resize, rotate } = require('../dist');
 
 describe('readme demo', () => {
     it('log and wont crash', () => {
