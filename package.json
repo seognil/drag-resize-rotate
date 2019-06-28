@@ -6,7 +6,7 @@
     "license": "MIT",
     "description": "drag-resize-rotate calculation core functions for UI frameworks.",
     "author": "Seognil LC",
-    "homepage": "https://githb.com/seognil-lab/drag-resize-rotate",
+    "homepage": "https://github.com/seognil-lab/drag-resize-rotate",
     "scripts": {
         "build": "npx rollup -c",
         "build:watch": "npx rollup -c -w",
